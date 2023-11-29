@@ -1,7 +1,9 @@
 const QuestionItem = ({ question, selectAnswer }) => {
+  if (!question) return null;
+
   return (
     <div className="question-item">
-      <h3>{question.question}</h3>
+      <h3 dangerouslySetInnerHTML={{ __html: question.question }}></h3>
       <ul>
         {question.answers.map((option, index) => (
           <li key={index}>
@@ -12,7 +14,7 @@ const QuestionItem = ({ question, selectAnswer }) => {
                 value={option}
                 onClick={() => selectAnswer(option)}
               />
-              {option}
+              <span dangerouslySetInnerHTML={{ __html: option }}></span>
             </label>
           </li>
         ))}

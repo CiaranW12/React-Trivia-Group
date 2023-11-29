@@ -1,31 +1,43 @@
-import questions from "../../questions";
 import QuestionItem from "../QuestionItem/QuestionItem";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from 'axios';
 
 export default function QuestionList({ currentQuestionIndex, setCurrentQuestionIndex }) {
+  const [questions, setQuestions] = useState([]);
   const [selectedAnswers, setSelectedAnswers] = useState([]);
   const [score, setScore] = useState(null);
 
-  const selectedAnswerHandler = (selectedAnswer) => {
-    const updatedSelectedAnswers = [...selectedAnswers];
-    updatedSelectedAnswers[currentQuestionIndex] = selectedAnswer;
-    setSelectedAnswers(updatedSelectedAnswers);
-  };
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      const response = await axios.get('https://opentdb.com/api.php?amount=10&category=9&difficulty=medium&type=multiple');
+      const fetchedQuestions = response.data.results.map(question => ({
+        ...question,
+        answers: [...question.incorrect_answers, question.correct_answer].sort(() => Math.random() - 0.5)
+      }));
+      setQuestions(fetchedQuestions);
+    };
 
-  const handleNext = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    }
+    fetchQuestions();
+  }, []);
+
+  const selectedAnswerHandler = (answer) => {
+    setSelectedAnswers((prev) => {
+      const copy = [...prev];
+      copy[currentQuestionIndex] = answer;
+      return copy;
+    });
   };
 
   const handlePrevious = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
-    }
+    setCurrentQuestionIndex((prev) => prev - 1);
+  };
+
+  const handleNext = () => {
+    setCurrentQuestionIndex((prev) => prev + 1);
   };
 
   const handleSubmit = () => {
-    const correctAnswers = questions.map(q => q.correctAnswer);
+    const correctAnswers = questions.map(q => q.correct_answer);
     let score = 0;
     for (let i = 0; i < correctAnswers.length; i++) {
       if (correctAnswers[i] === selectedAnswers[i]) {
